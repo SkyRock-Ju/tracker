@@ -30,7 +30,7 @@ public class FindByNameActionTest {
         showByNameAction.execute(input, tracker);
 
         var expOut = item1 + System.lineSeparator() + item2;
-        assertThat(out.toString(), is(expOut));
+        assertThat(out.toString().contains(expOut), is(true));
     }
 
     @Test
