@@ -25,8 +25,7 @@ public class FindByIdActionTest {
         Input input = mock(Input.class);
         when(input.askInt(any(String.class))).thenReturn(1);
         showByIdAction.execute(input, tracker);
-        assertThat(out.toString().contains("id=1, name='test item',"),
-                is(true));
+        assertThat(out.toString().contains("name: test item"), is(true));
     }
 
     @Test
