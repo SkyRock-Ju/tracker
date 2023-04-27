@@ -2,7 +2,6 @@ package ru.job4j.tracker;
 
 import lombok.*;
 
-
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @RequiredArgsConstructor
 public class Category {
