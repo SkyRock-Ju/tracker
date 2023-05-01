@@ -5,6 +5,7 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
+import java.util.Collections;
 import java.util.List;
 
 public class HbmTracker implements Store, AutoCloseable {
@@ -23,6 +24,8 @@ public class HbmTracker implements Store, AutoCloseable {
             return item;
         } catch (Exception e) {
             session.getTransaction().rollback();
+        } finally {
+            sf.close();
         }
         return item;
     }
@@ -42,8 +45,10 @@ public class HbmTracker implements Store, AutoCloseable {
             return true;
         } catch (Exception e) {
             session.getTransaction().rollback();
-            return false;
+        } finally {
+            sf.close();
         }
+        return false;
     }
 
     @Override
@@ -59,29 +64,58 @@ public class HbmTracker implements Store, AutoCloseable {
             return true;
         } catch (Exception e) {
             session.getTransaction().rollback();
-            return false;
+        } finally {
+            sf.close();
         }
+        return false;
     }
 
     @Override
     public List<Item> findAll() {
         var session = sf.openSession();
-        return session.createQuery("FROM Item", Item.class).list();
+        try {
+            var items = session.createQuery("FROM Item", Item.class).list();
+            session.getTransaction().commit();
+            return items;
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+        } finally {
+            sf.close();
+        }
+        return Collections.emptyList();
     }
 
     @Override
     public List<Item> findByName(String key) {
         var session = sf.openSession();
-        return session.createQuery("FROM Item item where item.name = :name", Item.class)
-                .setParameter("name", key)
-                .list();
+        try {
+            var items = session.createQuery("FROM Item item where item.name = :name", Item.class)
+                    .setParameter("name", key)
+                    .list();
+            session.getTransaction().commit();
+            return items;
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+        } finally {
+            sf.close();
+        }
+        return Collections.emptyList();
     }
 
     @Override
     public Item findById(Integer id) {
         var session = sf.openSession();
-        return session.createQuery("FROM Item item where item.id = :id", Item.class)
-                .setParameter("id", id).uniqueResult();
+        try {
+            var item = session.createQuery("FROM Item item where item.id = :id", Item.class)
+                    .setParameter("id", id).uniqueResult();
+            session.getTransaction().commit();
+            return item;
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+        } finally {
+            sf.close();
+        }
+        return new Item();
     }
 
     @Override
