@@ -33,7 +33,9 @@ public class Item {
     )
     private List<User> participates = new ArrayList<>();
 
-    private final LocalDateTime created = LocalDateTime.now();
+    @Getter
+    @Setter
+    private LocalDateTime created = LocalDateTime.now();
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
