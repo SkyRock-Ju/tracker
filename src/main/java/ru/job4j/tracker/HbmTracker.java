@@ -5,7 +5,7 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 public class HbmTracker implements Store, AutoCloseable {
@@ -19,13 +19,12 @@ public class HbmTracker implements Store, AutoCloseable {
         var session = sf.openSession();
         try {
             session.beginTransaction();
-            session.persist(item);
+            session.save(item);
             session.getTransaction().commit();
-            return item;
         } catch (Exception e) {
             session.getTransaction().rollback();
         } finally {
-            sf.close();
+            session.close();
         }
         return item;
     }
@@ -33,89 +32,91 @@ public class HbmTracker implements Store, AutoCloseable {
     @Override
     public boolean replace(Integer id, Item item) {
         var session = sf.openSession();
+        boolean result = false;
         try {
             session.beginTransaction();
-            session.createQuery(
-                            "UPDATE Item SET name = :itemName WHERE id = :id",
-                            Item.class)
+            result = session.createQuery(
+                            "UPDATE Item SET name = :itemName WHERE id = :id")
                     .setParameter("itemName", item.getName())
                     .setParameter("id", id)
-                    .executeUpdate();
+                    .executeUpdate() > 0;
             session.getTransaction().commit();
-            return true;
         } catch (Exception e) {
             session.getTransaction().rollback();
         } finally {
-            sf.close();
+            session.close();
         }
-        return false;
+        return result;
     }
 
     @Override
     public boolean delete(Integer id) {
         var session = sf.openSession();
+        boolean result = false;
         try {
             session.beginTransaction();
-            session.createQuery(
-                            "DELETE FROM Item WHERE id = :id", Item.class)
+            result = session.createQuery(
+                            "DELETE FROM Item WHERE id = :id")
                     .setParameter("id", id)
-                    .executeUpdate();
+                    .executeUpdate() > 0;
             session.getTransaction().commit();
-            return true;
         } catch (Exception e) {
             session.getTransaction().rollback();
         } finally {
-            sf.close();
+            session.close();
         }
-        return false;
+        return result;
     }
 
     @Override
     public List<Item> findAll() {
         var session = sf.openSession();
+        List<Item> result = new ArrayList<>();
         try {
-            var items = session.createQuery("FROM Item", Item.class).list();
+            session.beginTransaction();
+            result = session.createQuery("FROM Item", Item.class).list();
             session.getTransaction().commit();
-            return items;
         } catch (Exception e) {
             session.getTransaction().rollback();
         } finally {
-            sf.close();
+            session.close();
         }
-        return Collections.emptyList();
+        return result;
     }
 
     @Override
     public List<Item> findByName(String key) {
         var session = sf.openSession();
+        List<Item> result = new ArrayList<>();
         try {
-            var items = session.createQuery("FROM Item item where item.name = :name", Item.class)
+            session.beginTransaction();
+            result = session.createQuery("FROM Item WHERE name = :name", Item.class)
                     .setParameter("name", key)
                     .list();
             session.getTransaction().commit();
-            return items;
         } catch (Exception e) {
             session.getTransaction().rollback();
         } finally {
-            sf.close();
+            session.close();
         }
-        return Collections.emptyList();
+        return result;
     }
 
     @Override
     public Item findById(Integer id) {
         var session = sf.openSession();
+        Item item = new Item();
         try {
-            var item = session.createQuery("FROM Item item where item.id = :id", Item.class)
-                    .setParameter("id", id).uniqueResult();
+            session.beginTransaction();
+            item = session.createQuery("FROM Item WHERE id = :id", Item.class)
+                    .setParameter("id", id).getSingleResult();
             session.getTransaction().commit();
-            return item;
-        } catch (Exception e) {
+        } catch (Exception exception) {
             session.getTransaction().rollback();
         } finally {
-            sf.close();
+            session.close();
         }
-        return new Item();
+        return item;
     }
 
     @Override
