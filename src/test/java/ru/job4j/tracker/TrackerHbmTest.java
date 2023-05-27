@@ -48,7 +48,7 @@ public class TrackerHbmTest {
             tracker.add(bug);
             int id = bug.getId();
             tracker.delete(id);
-            assertThat(tracker.findById(id).getName(), is(nullValue()));
+            assertThat(tracker.findById(id), is(nullValue()));
         }
     }
 }
